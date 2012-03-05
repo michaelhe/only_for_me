@@ -22,8 +22,8 @@ class Send_emails:
     """define smtp server infomation"""
     def __init__(self):
         self._mail_host = 'smtp.qq.com'
-        self._mail_user = '1693545867@qq.com'
-        self._mail_pass = 'Vanchu2011'
+        self._mail_user = '******@qq.com'
+        self._mail_pass = '******'
         self.message = MIMEMultipart()
 
     def set_receiver(self, receivers):
