@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# needed python 2.7.2
 # author : michael <michaelhe@vanchu.net>
 # date   : 2011-11-10
 # modified : michael <michaelhe@vanchu.net> @ 2012-02-21
