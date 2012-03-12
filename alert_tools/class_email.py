@@ -55,8 +55,8 @@ class Send_emails:
         
     def send(self):
         try:
-            #s = smtplib.SMTP(self._mail_host)
-            s = smtplib.SMTP_SSL(self._mail_host)
+            s = smtplib.SMTP(self._mail_host)
+            #s = smtplib.SMTP_SSL(self._mail_host)
             #s.ehlo()
             #s.starttls()
             s.login(self._mail_user, self._mail_pass)
