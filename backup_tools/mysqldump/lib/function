@@ -9,7 +9,7 @@ function CheckBackup()
         rm $rmfile
         backup_count_after_rm=$(ls -l *.tar.bz2 | wc -l)
         if [ $backup_count_after_rm -eq 10 ]; then
-            exit 1
+            break
         fi
         done
 fi
