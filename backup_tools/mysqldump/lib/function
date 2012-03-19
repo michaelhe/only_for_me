@@ -82,7 +82,7 @@ function FindNeedBakDB() {
         fi 
      
         if [ -s "${2}/conf/exclude.conf" ];then
-            while read dbhostname_in_exclude not_need_bak_db not_need_bak_tables
+            while read dbhostname_in_exclude not_need_bak_db not_need_bak_table_prefixs
             do 
 
                  if [ "${dbhostname_in_exclude:0:1}" = "#" ];then
@@ -90,8 +90,19 @@ function FindNeedBakDB() {
                  fi
 
                 if [ "$dbhostname_in_exclude" = "$1" ];then
-                    if [  -z "$not_need_bak_tables" ];then
+                    if [  -z "$not_need_bak_table_prefixs" ];then
                         sed -i  "/^${not_need_bak_db}$/d" ${2}/baktmp/${1}/${1}.dbs.list
+                    else
+                        if [ ! -d "${2}/baktmp/${1}/${not_need_bak_db}" ];then
+                            mkdir -p ${2}/baktmp/${1}/${not_need_bak_db}
+                        fi
+                        for not_need_bak_table_prefix in $not_need_bak_table_prefixs
+                        do
+                            $3 $4 -e"show tables from ${not_need_bak_db};" | grep -v "Tables_in" | grep "$not_need_bak_table_prefix" >> ${2}/baktmp/${1}/${not_need_bak_db}/${not_need_bak_db}.excludetables.list.tmp
+                        done
+                        sort ${2}/baktmp/${1}/${not_need_bak_db}/${not_need_bak_db}.excludetables.list.tmp | uniq > ${2}/baktmp/${1}/${not_need_bak_db}/${not_need_bak_db}.excludetables.list
+                        rm ${2}/baktmp/${1}/${not_need_bak_db}/${not_need_bak_db}.excludetables.list.tmp
+                        
                     fi
                 fi
             done < "${2}/conf/exclude.conf"
@@ -109,7 +120,7 @@ function FindDBTable() {
     while read dbname_in_list
     do
         echo "get need backup tables from host->${1} database->${dbname_in_list}"
-        if [ ! -f "${2}/baktmp/${1}/${dbname_in_list}" ];then
+        if [ ! -d "${2}/baktmp/${1}/${dbname_in_list}" ];then
             mkdir -p ${2}/baktmp/${1}/${dbname_in_list}
         fi
         ${3} ${4} -e"show tables from ${dbname_in_list}" | grep -v "Tables_in" > ${2}/baktmp/${1}/${dbname_in_list}/${dbname_in_list}.tables.list
@@ -119,11 +130,16 @@ function FindDBTable() {
             if [ "${dbhostname_in_exclude:0:1}" = "#" ];then
                  continue
             fi
-
-            for not_need_bak_table in $not_need_bak_tables
-                do
+            if [ -f "${2}/baktmp/${1}/${dbname_in_list}/${dbname_in_list}.excludetables.list" ];then
+            while read not_need_bak_table
+            do
                 sed -i "/^${not_need_bak_table}$/d" ${2}/baktmp/${1}/${dbname_in_list}/${dbname_in_list}.tables.list
-            done
+            done < ${2}/baktmp/${1}/${dbname_in_list}/${dbname_in_list}.excludetables.list
+            fi
+#            for not_need_bak_table in $not_need_bak_tables
+#                do
+#                sed -i "/^${not_need_bak_table}$/d" ${2}/baktmp/${1}/${dbname_in_list}/${dbname_in_list}.tables.list
+#            done
         done < "${2}/conf/exclude.conf"
 
         echo "Build backup list base on tables for host->${1} database->${dbname_in_list}"
