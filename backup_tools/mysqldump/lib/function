@@ -4,7 +4,7 @@ function CheckBackup()
     cd ${1}/${2}/
     backup_count=$(ls -l *.tar.bz2 | wc -l)
     if [ $backup_count -gt 10 ]; then
-    for rmfile in $(find $scriptPath/$1/ -mtime +10 -print)
+    for rmfile in $(find ./ -mtime +10 -print)
     do
         rm $rmfile
         backup_count_after_rm=$(ls -l *.tar.bz2 | wc -l)
