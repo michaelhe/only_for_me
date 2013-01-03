@@ -7,12 +7,14 @@ import sys
 
 class Fetion:
     
-    def __init__(self,phone='*****',passwd='******'):
+    #def __init__(self,phone='ne09@qq.com',passwd='qweasd'):
+    def __init__(self,phone='13420901207',passwd='Qaz001@'):
         self._phone = phone
         self._passwd = passwd
         self._status = False
         self._cookie_handler = urllib2.HTTPCookieProcessor(cookielib.CookieJar())
-        url = 'http://f.10086.cn/im/login/login.action'
+        #url = 'http://f.10086.cn/im/login/login.action'
+        url = 'http://f.10086.cn/huc/user/space/login.do?m=tologin'
         self.http_request(url)
     
     def http_request(self, url, data=None):
@@ -26,10 +28,14 @@ class Fetion:
         return response.read()
 
     def login(self):
-        url = 'http://f.10086.cn/im/login/inputpasssubmit1.action'
-        data = {'pass':self._passwd , 'loginstatus':1 , 'm':self._phone}
+        #url = 'http://f.10086.cn/im/login/inputpasssubmit1.action'
+        #data = {'pass':self._passwd , 'loginstatus':1 , 'm':self._phone}
+        url = 'http://f.10086.cn/huc/user/space/login.do?m=submit&fr=space'
+        data = {'password':self._passwd ,'mobilenum':self._phone}
         postdata = urlencode(data)
         response = self.http_request(url, postdata)
+        url = 'http://f.10086.cn/im/login/cklogin.action'
+        response = self.http_request(url, '')
         t = self._get_t_value(response)
         if t:
             self._status = True
@@ -60,8 +66,9 @@ class Fetion:
             
     def sendMsgToFriend(self, phone, msg):
         touserid = self.get_touserid(phone)
+        csrfToken = self.get_csrfToken(touserid)
         url = 'http://f.10086.cn/im/chat/sendMsg.action?touserid='+touserid
-        data = {'backUrl':'','msg':msg,'touchTextLength':'','touchTitle':''}
+        data = {'backUrl':'','msg':msg,'touchTextLength':'','touchTitle':'','csrfToken':csrfToken}
         postdata = urlencode(data)
         response = self.http_request(url, postdata)
         if "发送消息成功" in response:
@@ -69,14 +76,23 @@ class Fetion:
         else:
             print "send fetion failed!"         
         
+    def get_csrfToken(self, touserid):
+        url = 'http://f.10086.cn/im/chat/toinputMsg.action?type=all&touserid='+touserid
+        response = self.http_request(url)
+        return self._get_csrfToken(response)
     
-    def get_touserid(self,phone):
+    def get_touserid(self, phone):
         url = 'http://f.10086.cn/im/index/searchOtherInfoList.action?t='+self._t
         data = {'searchText':phone}
         postdata = urlencode(data)
         response = self.http_request(url, postdata)
         return self._get_touserid(response)
     
+    def _get_csrfToken(self, response):
+        re_pattern = "name=\"csrfToken\" value=\"(.*?)\""
+        string = re.findall(re_pattern, response)
+        return string[0]
+
     def _get_t_value(self, response):
         re_pattern = "ontimer=\"(.*?)\""
         string = re.findall(re_pattern,response)
