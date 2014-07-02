@@ -59,12 +59,12 @@ class NsLib(SpiderRequest):
 
 if __name__ == '__main__':
     nslib = NsLib()
-    print nslib.login('0440061025408','19880406')
+    print nslib.login('0440061025408','12344')
     nslib.get_list()
     nslib.logout()
 
     nslib2 = NsLib()
-    print nslib2.login('0440061027527','19860505')
+    print nslib2.login('0440061027527','12345')
     nslib2.get_list()
     nslib2.logout()
     
